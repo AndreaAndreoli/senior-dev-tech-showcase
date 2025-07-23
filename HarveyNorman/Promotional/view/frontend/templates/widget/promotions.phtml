@@ -1,0 +1,51 @@
+<?php
+/**
+ * @var $block \HarveyNorman\Promotional\Block\Product\Widget\Promotions
+ */
+?>
+<div>
+<?php
+$products = $block->getProducts();
+?>
+
+<div class="widget-promotional-products">
+    <h2><?= $block->escapeHtml($block->getTitle()) ?></h2>
+
+    <?php if (!empty($products) && is_iterable($products)): ?>
+        <ul class="promotional-products-grid">
+            <?php foreach ($products as $product): ?>
+                <?php
+                $originalPrice = (float)$product->getPrice();
+                $discount = (float)$product->getDiscountPercentage();
+                $discountedPrice = $product->getDiscountedPrice();
+
+                $promotionStatus = ((int)$product->getPromotionStatus() === 1) ? 'Enabled' : 'Disabled';
+
+                $startDateRaw = $product->getStartDate();
+                $endDateRaw = $product->getEndDate();
+                $currentDate = new \DateTime();
+
+                $startDate = $startDateRaw ? new \DateTime($startDateRaw) : null;
+                $endDate = $endDateRaw ? new \DateTime($endDateRaw) : null;
+
+                $isEligible = $promotionStatus === 'Enabled'
+                    && $startDate && $endDate
+                    && $startDate <= $currentDate && $currentDate <= $endDate;
+
+                $cssClass = $isEligible ? 'eligible' : 'not-eligible';
+                ?>
+                <li class="promotional-product-card <?= $cssClass ?>">
+                    <div class="product-details">
+                        <h3><?= $product->getName() ?></h3>
+                        <p><strong>SKU:</strong> <?= $product->getSku() ?></p>
+                        <p><strong>Original:</strong> $<?= number_format($originalPrice, 2) ?></p>
+                        <p><strong>Discounted:</strong> $<?= number_format($discountedPrice, 2) ?></p>
+                        <p><strong>Status:</strong> <?= $promotionStatus ?></p>
+                    </div>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php else: ?>
+        <p>No promotional products found.</p>
+    <?php endif; ?>
+</div>
